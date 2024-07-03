@@ -3,6 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Models\Contacts;
+use App\Models\Post;
+use App\Models\User;
+use App\Models\Role;
+use App\Models\Country;
+use App\Models\Photo;
+use App\Models\Tag;
+use App\Models\Video;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,67 +49,173 @@ use App\Models\Contacts;
 // });
 
 Route::get('/display', function(){
-    return Contacts::all();
+    return Post::all();
 });
 
 Route::get('/displaytrash', function(){
 
-    // $contacts = Contacts::withTrashed()->get();
+    // $posts = Post::withTrashed()->get();
 
-    $contacts = Contacts::onlyTrashed()->where('id', 1)->get();
-    return $contacts;
+    $posts = Post::onlyTrashed()->get();
+    return $posts;
 });
 
 Route::get('/restore', function(){
 
-    $contacts = Contacts::withTrashed()->restore();
+    $posts = Post::withTrashed()->restore();
 
-    return $contacts;
+    return $posts;
 });
 
 Route::get('/forcedelete', function(){
 
-    $contacts = Contacts::withTrashed()->where('id', 6)->forceDelete();
+    $posts = Post::withTrashed()->where('id', 1)->forceDelete();
 
-    return $contacts;
+    return $posts;
 });
 
 Route::get('/insert', function(){
-    DB::insert('insert into contacts(name, contact_number) values(?, ?)', ['ongbak', 'asdqweqwe']);
+    DB::insert('insert into posts(user_id, title, content) values(?, ?, ?)', ['1', 'asdasd', 'asdqweqwe']);
 });
 
 Route::get('/findwhere/{id}', function($id){
-    $post = Contacts::where('id', $id)->orderBy('id', 'desc')->take(1)->get();
+    $post = Post::where('id', $id)->orderBy('id', 'desc')->take(1)->get();
 
     return $post;
 });
 
 Route::get('/basicinsert', function(){
 
-    $contact = Contacts::find(2);
+    $posts = new Post;
 
-    $contact->name = 'muzan';
-    $contact->contact_number = '123123213';
+    $posts->title = 'muzan';
+    $posts->user_id = '1';
+    $posts->content = '123123213';
 
-    $contact->save();
+    $posts->save();
 
-    return Contacts::all();
+    return Post::all();
 });
 
 Route::get('/update', function(){
-    return Contacts::where('name', 'Bogart')
-        ->where('id', 3)
-        ->update(['name' => 'boss kenshin', 'contact_number' => '09123123']);
+    return Post::where('id', 2)
+        ->update(['title' => 'boss kenshin', 'content' => '09123123']);
 });
 
 Route::get('/delete/{id}', function($id){
-    $contact = Contacts::find($id);
+    $posts = Post::find($id);
 
-    return $contact->delete();
+    return $posts->delete();
 });
 
 Route::get('/softdelete', function(){
-    $contact = Contacts::find(1);
+    $posts = Post::find(1);
 
-    return $contact->delete();
+    return $posts->delete();
+});
+
+// One to one relationship
+
+Route::get('/user/{id}/post', function($id){
+
+    return User::find($id)->post;
+});
+
+Route::get('/post/{id}/user', function($id){
+
+    return Post::find($id)->user;
+});
+
+// One to many relationship
+
+Route::get('/posts/{id}', function($id){
+
+    $posts = User::find($id)->posts;
+
+    foreach($posts as $post){
+        echo $post->title . '<br>';
+    }
+});
+
+//Many to many relationship
+
+Route::get('/user/{id}/role', function($id){
+
+    $user = User::find($id);
+
+    foreach($user->roles as $role){
+        echo $role->name;
+    }
+});
+
+Route::get('/user/pivot', function(){
+
+    $user = User::find(1);
+
+    foreach($user->roles as $role){
+        echo $role->pivot->created_at;
+    }
+});
+
+Route::get('/user/country', function(){
+
+    $country = Country::find(2);
+
+    foreach($country->posts as $post){
+        return $post->title;
+    }
+});
+
+Route::get('user/photos', function(){
+
+    $user = User::find(1);
+
+    foreach($user->photos as $photo){
+        echo $photo->path . '<br>';
+    }
+});
+
+Route::get('post/photos', function(){
+
+    $post = Post::find(1);
+
+    foreach($post->photos as $photo){
+        echo $photo->path . '<br>';
+    }
+});
+
+Route::get('/photo/{id}/post', function($id){
+    
+    $photo = Photo::findOrFail($id);
+
+    return $photo->imageable;
+});
+
+// Polymorphic Many to many
+
+Route::get('/post/tag', function(){
+
+    $post = Post::find(1);
+
+    foreach($post->tags as $tag){
+        echo $tag->name;
+    }
+});
+
+Route::get('/video/tag', function(){
+
+    $post = Video::find(2);
+
+    foreach($post->tags as $tag){
+        echo $tag->name;
+    }
+});
+
+Route::get('/tag/post', function(){
+
+    $tag = Tag::find(2);
+
+    foreach($tag->posts as $post){
+        echo $post->title;
+    }
 });
