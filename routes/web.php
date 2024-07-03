@@ -216,6 +216,6 @@ Route::get('/tag/post', function(){
     $tag = Tag::find(2);
 
     foreach($tag->posts as $post){
-        echo $post->title;
+        echo $post->title . '<br>';
     }
 });
