@@ -22,7 +22,7 @@ use App\Models\Video;
 |
 */
 // Route::resource('posts', PostController::class);
-// Route::get('/post/{id}', [PostController::class, 'index']);
+Route::get('/show/{id}', [PostController::class, 'show']);
 
 
 // Route::get('/', function () {
@@ -128,14 +128,14 @@ Route::get('/post/{id}/user', function($id){
 
 // One to many relationship
 
-Route::get('/posts/{id}', function($id){
+// Route::get('/posts/{id}', function($id){
 
-    $posts = User::find($id)->posts;
+//     $posts = User::find($id)->posts;
 
-    foreach($posts as $post){
-        echo $post->title . '<br>';
-    }
-});
+//     foreach($posts as $post){
+//         echo $post->title . '<br>';
+//     }
+// });
 
 //Many to many relationship
 
@@ -213,9 +213,21 @@ Route::get('/video/tag', function(){
 
 Route::get('/tag/post', function(){
 
-    $tag = Tag::find(2);
+    $tag = Tag::find(1);
 
     foreach($tag->posts as $post){
         echo $post->title . '<br>';
     }
 });
+
+Route::get('/tag/video', function(){
+
+    $tag = Tag::find(1);
+
+    foreach($tag->videos as $video){
+        echo $video->name . '<br>';
+    }
+});
+
+
+Route::resource('/posts', PostController::class);

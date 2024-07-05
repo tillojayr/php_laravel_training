@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
+use App\Http\Requests\CreatePostRequest;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -9,10 +11,11 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index($id)
+    public function index()
     {
         //
-        return $id;
+        $posts = Post::all();
+        return view('posts.index', compact('posts'));
     }
 
     /**
@@ -21,14 +24,28 @@ class PostController extends Controller
     public function create()
     {
         //
+        return view('posts.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreatePostRequest $request)
     {
-        //
+
+        $input = $request->all();
+
+        if($file = $request->file('file')){
+
+            $name = $file->getClientOriginalName();
+
+            $file->move('images', $name);
+
+            $input['path'] = $name;
+        }
+
+        Post::create($input);
+
     }
 
     /**
@@ -36,9 +53,9 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        $names = ['asd', 'qwe', 'zxc'];
 
-        return view('sample', compact('names', 'id'));
+        $post = Post::findOrFail($id);
+        return view('posts.show', compact('post'));
     }
 
     /**
@@ -47,8 +64,9 @@ class PostController extends Controller
     public function edit(string $id)
     {
         //
-        // return 'edit';
-        return view('sample', compact('id'));
+        $post = Post::findOrFail($id);
+
+        return view('posts.edit', compact('post'));
     }
 
     /**
@@ -57,6 +75,9 @@ class PostController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        Post::where('id', $id)->update(['title'=>$request->get('title')]);
+
+        return redirect('/posts');
     }
 
     /**
@@ -65,5 +86,8 @@ class PostController extends Controller
     public function destroy(string $id)
     {
         //
+        Post::findOrFail($id)->delete();
+
+        return redirect('/posts');
     }
 }
